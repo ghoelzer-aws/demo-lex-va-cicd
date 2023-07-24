@@ -1,28 +1,15 @@
-# demo-lex-va-cicd
-* Add a brief paragraph or two that summarizes the purpose and function of this repository.
-* You could add relevant links for the consumers of this repository.
+# Welcome to your CDK TypeScript project
 
-## Usage
-* Define the purpose of the repository if this is going to be a tool, utility, library or a service.
-* Provide the instructions on how to consume this repository for the consumers.
+You should explore the contents of this project. It demonstrates a CDK app with an instance of a stack (`DemoLexVaCicdStack`)
+which contains an Amazon SQS queue that is subscribed to an Amazon SNS topic.
 
-## Get Started
-* Provide instructions on how to setup and use this repository for local machine development and testing.
+The `cdk.json` file tells the CDK Toolkit how to execute your app.
 
-## Prerequisites
-* Provide list of recommended modules and steps on how to install them.
+## Useful commands
 
-```
-Setup examples:
-...
-```
-
-## Install
-* Provide step-by-step guide on how to get the development environment running.
-* Provide test examples so as to perform a small demo.
-
-## Testing
-* Provide commands and configuration details on how to test the repository.
-
-## Contact
-* Provide contact details on how to contact the owners managing this repository.
+* `npm run build`   compile typescript to js
+* `npm run watch`   watch for changes and compile
+* `npm run test`    perform the jest unit tests
+* `cdk deploy`      deploy this stack to your default AWS account/region
+* `cdk diff`        compare deployed stack with current state
+* `cdk synth`       emits the synthesized CloudFormation template
