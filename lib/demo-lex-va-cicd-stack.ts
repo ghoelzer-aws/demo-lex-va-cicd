@@ -1,5 +1,7 @@
+import * as path from 'path';
 import { Duration, RemovalPolicy, Stack, StackProps, aws_lex as lex } from 'aws-cdk-lib';
 import * as iam from 'aws-cdk-lib/aws-iam';
+import * as lambda from 'aws-cdk-lib/aws-lambda';
 import * as logs from 'aws-cdk-lib/aws-logs';
 import * as s3 from 'aws-cdk-lib/aws-s3';
 import { Construct } from 'constructs';
@@ -7,6 +9,14 @@ import { Construct } from 'constructs';
 export class DemoLexVaCicdStack extends Stack {
   constructor(scope: Construct, id: string, props?: StackProps) {
     super(scope, id, props);
+
+    const lexCodeHook = new lambda.Function(this, 'lexCodeHook', {
+      runtime: lambda.Runtime.PYTHON_3_9,
+      code: lambda.Code.fromAsset(path.join(__dirname, './resources/lexBot')),
+      handler: 'index.lambda_handler',
+      architecture: lambda.Architecture.ARM_64,
+      timeout: Duration.minutes(1),
+    });
 
     const lexLogGroup = new logs.LogGroup(this, 'lexLogGroup', {
       retention: logs.RetentionDays.ONE_WEEK,
@@ -234,6 +244,12 @@ export class DemoLexVaCicdStack extends Stack {
         {
           botAliasLocaleSetting: {
             enabled: true,
+            codeHookSpecification: {
+              lambdaCodeHook: {
+                codeHookInterfaceVersion: '1.0',
+                lambdaArn: lexCodeHook.functionArn,
+              },
+            },
           },
           localeId: 'en_US',
         },
