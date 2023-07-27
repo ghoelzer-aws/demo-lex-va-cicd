@@ -12,7 +12,7 @@ export class DemoLexVaCicdStack extends Stack {
 
     const lexCodeHook = new lambda.Function(this, 'lexCodeHook', {
       runtime: lambda.Runtime.PYTHON_3_9,
-      code: lambda.Code.fromAsset(path.join(__dirname, './resources/lexBot')),
+      code: lambda.Code.fromAsset(path.join(__dirname, '../resources/lexBot')),
       handler: 'index.lambda_handler',
       architecture: lambda.Architecture.ARM_64,
       timeout: Duration.minutes(1),
@@ -285,5 +285,11 @@ export class DemoLexVaCicdStack extends Stack {
     const lexArn = `arn:aws:lex:${Stack.of(this).region}:${
       Stack.of(this).account
     }:bot-alias/${helloLexBot.attrId}/${helloLexBotAlias.attrBotAliasId}`;
+    
+    lexCodeHook.addPermission('Lex Invocation', {
+      principal: new iam.ServicePrincipal('lexv2.amazonaws.com'),
+      sourceArn: lexArn,
+    });
+
   }
 }
