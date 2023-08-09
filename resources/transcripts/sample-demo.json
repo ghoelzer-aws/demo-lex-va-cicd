@@ -1,0 +1,209 @@
+{"CustomerMetadata": {"ContactId": "20422f9a-1d19-4950-a75b-870ba02dbd34"
+    },
+"Participants": [
+        {"ParticipantId": "spk_1", "ParticipantRole": "AGENT"
+        },
+        {"ParticipantId": "spk_0", "ParticipantRole": "CUSTOMER"
+        },
+        {"ParticipantId": "IVR", "ParticipantRole": "AGENT"
+        }
+    ],
+"Version": "1.1.0",
+"Transcript": [
+        {"Id": "366a6550-9ac6-4eaf-8452-ca3ea29925bb.wav.json",
+   "Content": "Thank you for calling the principal Financial Group Retirement Service Center. This call may be monitored or recorded. Please enter your contract number or code followed by the pound sign. We are currently experiencing longer than average hold times. We know your time is valuable and appreciate your patience. We'll be with you as quickly as we can.",
+   "ParticipantId": "IVR"
+        },
+        {"Id": " 366a6550-9ac6-4eaf-8452-ca3ea29925bb.wav.json",
+   "Content": " Thank you for calling principal Financial. This is [PII]. May I have your contact ID and name please?",
+   "ParticipantId": " spk_1"
+        },
+        {"Id": " 366a6550-9ac6-4eaf-8452-ca3ea29925bb.wav.json",
+   "Content": " Sure it's um Greater Phoenix Economic Council and the contract number is 334363 [PII].",
+   "ParticipantId": " spk_0"
+        },
+        {"Id": " 366a6550-9ac6-4eaf-8452-ca3ea29925bb.wav.json",
+   "Content": " Mhm. Ok. And who am I speaking with? Uh Thank you [PII]. How can I help you?",
+   "ParticipantId": " spk_1"
+        },
+        {"Id": " 366a6550-9ac6-4eaf-8452-ca3ea29925bb.wav.json",
+   "Content": " Um I'm calling because um the hr director of called and they have a scheduled auto escalate set to occur. July 1st and she has received feedback from several employees that even though they try to opt out of the auto escalate online that they were unable to lower their contribution rate. So just need to find out what's going on for them.",
+   "ParticipantId": " spk_0"
+        },
+        {"Id": " 366a6550-9ac6-4eaf-8452-ca3ea29925bb.wav.json",
+   "Content": " Ok. And was it more more than one employee? It sounds like several.",
+   "ParticipantId": " spk_1"
+        },
+        {"Id": " 366a6550-9ac6-4eaf-8452-ca3ea29925bb.wav.json",
+   "Content": " Yes there are several.",
+   "ParticipantId": " spk_0"
+        },
+        {"Id": " 366a6550-9ac6-4eaf-8452-ca3ea29925bb.wav.json",
+   "Content": " Ok. Ah have you been able to log in to um any of the?",
+   "ParticipantId": " spk_1"
+        },
+        {"Id": " 366a6550-9ac6-4eaf-8452-ca3ea29925bb.wav.json",
+   "Content": " I haven't logged in at all. No I'm not.",
+   "ParticipantId": " spk_0"
+        },
+        {"Id": " 366a6550-9ac6-4eaf-8452-ca3ea29925bb.wav.json",
+   "Content": " Ok let me.",
+   "ParticipantId": " spk_1"
+        },
+        {"Id": " 366a6550-9ac6-4eaf-8452-ca3ea29925bb.wav.json",
+   "Content": " And I'm yeah I that's that's I can't do that.",
+   "ParticipantId": " spk_0"
+        },
+        {"Id": " 366a6550-9ac6-4eaf-8452-ca3ea29925bb.wav.json",
+   "Content": " Yeah.",
+   "ParticipantId": " spk_1"
+        },
+        {"Id": " 366a6550-9ac6-4eaf-8452-ca3ea29925bb.wav.json",
+   "Content": " Yeah. II I am I am the least techy person. I'm just telling you the plan sponsor is telling me what the participants are having an issue with and I need principal to solve it.",
+   "ParticipantId": " spk_0"
+        },
+        {"Id": " 366a6550-9ac6-4eaf-8452-ca3ea29925bb.wav.json",
+   "Content": " No. Yeah. No definitely. I was just didn't wanna reproduce what you've already.",
+   "ParticipantId": " spk_1"
+        },
+        {"Id": " 366a6550-9ac6-4eaf-8452-ca3ea29925bb.wav.json",
+   "Content": " I haven't done anything.",
+   "ParticipantId": " spk_0"
+        },
+        {"Id": " 366a6550-9ac6-4eaf-8452-ca3ea29925bb.wav.json",
+   "Content": " Ok. Let me just log in and take a look at at least one employee be right with you.",
+   "ParticipantId": " spk_1"
+        },
+        {"Id": " 366a6550-9ac6-4eaf-8452-ca3ea29925bb.wav.json",
+   "Content": " Ok.",
+   "ParticipantId": " spk_0"
+        },
+        {"Id": " 366a6550-9ac6-4eaf-8452-ca3ea29925bb.wav.json",
+   "Content": " Ok. Could you give me one name that I could start with?",
+   "ParticipantId": " spk_1"
+        },
+        {"Id": " 366a6550-9ac6-4eaf-8452-ca3ea29925bb.wav.json",
+   "Content": " Um ok. No she didn't send one. I can give her a call and see if she will answer.",
+   "ParticipantId": " spk_0"
+        },
+        {"Id": " 366a6550-9ac6-4eaf-8452-ca3ea29925bb.wav.json",
+   "Content": " Yeah I mean at least I could begin by looking at one person making sure that's",
+   "ParticipantId": " spk_1"
+        },
+        {"Id": " 366a6550-9ac6-4eaf-8452-ca3ea29925bb.wav.json",
+   "Content": " thank you.",
+   "ParticipantId": " spk_1"
+        },
+        {"Id": " 366a6550-9ac6-4eaf-8452-ca3ea29925bb.wav.json",
+   "Content": " Right. He's looking it up to see what might be going on and there were a few people that that maybe there was a blackout period because it's almost July 1st. No there was no I looked at no no no. It already because like mine I I have a set amount so I selected not to do that. Yeah. So it's fine. But um yeah it's uh I know people that is grayed out you can see it it is grayed out. Ok. So it's in the um and so what section is grayed out?",
+   "ParticipantId": " spk_0"
+        },
+        {"Id": " 366a6550-9ac6-4eaf-8452-ca3ea29925bb.wav.json",
+   "Content": " How are you? Hi I'm good. Hey I have principal on my land line. Do you have um a participant's name that they can look up? That isn't [PII]. Uh Who is it? I'm sorry. [PII] [PII]? Ok. [PII] [PII].",
+   "ParticipantId": " spk_0"
+        },
+        {"Id": " 366a6550-9ac6-4eaf-8452-ca3ea29925bb.wav.json",
+   "Content": " Hm.",
+   "ParticipantId": " spk_1"
+        },
+        {"Id": " 366a6550-9ac6-4eaf-8452-ca3ea29925bb.wav.json",
+   "Content": " Like when you go into the website? And yeah if you going to change your contribution amount oh talks about the um the increase that we do every July up to 10%.",
+   "ParticipantId": " spk_0"
+        },
+        {"Id": " 366a6550-9ac6-4eaf-8452-ca3ea29925bb.wav.json",
+   "Content": " Mhm.",
+   "ParticipantId": " spk_1"
+        },
+        {"Id": " 366a6550-9ac6-4eaf-8452-ca3ea29925bb.wav.json",
+   "Content": " So the first person I'm looking at is uh you gave me uh [PII]. She's at 6% currently.",
+   "ParticipantId": " spk_1"
+        },
+        {"Id": " 366a6550-9ac6-4eaf-8452-ca3ea29925bb.wav.json",
+   "Content": " Yeah. Ok.",
+   "ParticipantId": " spk_0"
+        },
+        {"Id": " 366a6550-9ac6-4eaf-8452-ca3ea29925bb.wav.json",
+   "Content": " So now I was thinking to find out maybe she's at the max per paycheck already.",
+   "ParticipantId": " spk_1"
+        },
+        {"Id": " 366a6550-9ac6-4eaf-8452-ca3ea29925bb.wav.json",
+   "Content": " Um Is that well I think their auto enroll is at 6% but the auto escalate is 1% up to like a 10% cap or something.",
+   "ParticipantId": " spk_0"
+        },
+        {"Id": " 366a6550-9ac6-4eaf-8452-ca3ea29925bb.wav.json",
+   "Content": " That's why she can't go up. So. Ok. Yeah that's what I wanted to first check.",
+   "ParticipantId": " spk_1"
+        },
+        {"Id": " 366a6550-9ac6-4eaf-8452-ca3ea29925bb.wav.json",
+   "Content": " You can see all that but it's the option to change. It is gray out. Ok. Can't change that. So what's happening is they when they when they go into the website to change their contribution amount it's gray out and they can't change it.",
+   "ParticipantId": " spk_0"
+        },
+        {"Id": " 366a6550-9ac6-4eaf-8452-ca3ea29925bb.wav.json",
+   "Content": " Right.",
+   "ParticipantId": " spk_1"
+        },
+        {"Id": " 366a6550-9ac6-4eaf-8452-ca3ea29925bb.wav.json",
+   "Content": " Yeah they can change the contribution but they can't change the auto increase.",
+   "ParticipantId": " spk_0"
+        },
+        {"Id": " 366a6550-9ac6-4eaf-8452-ca3ea29925bb.wav.json",
+   "Content": " Yeah sure. Or is it easier just to give me a call back?",
+   "ParticipantId": " spk_0"
+        },
+        {"Id": " 366a6550-9ac6-4eaf-8452-ca3ea29925bb.wav.json",
+   "Content": " Um yeah I could uh email you back.",
+   "ParticipantId": " spk_1"
+        },
+        {"Id": " 366a6550-9ac6-4eaf-8452-ca3ea29925bb.wav.json",
+   "Content": " Ok why don't you email me back and then do you have [PII] information there there? She's the um hr contact and the plan sponsor.",
+   "ParticipantId": " spk_0"
+        },
+        {"Id": " 366a6550-9ac6-4eaf-8452-ca3ea29925bb.wav.json",
+   "Content": " Mhm.",
+   "ParticipantId": " spk_1"
+        },
+        {"Id": " 366a6550-9ac6-4eaf-8452-ca3ea29925bb.wav.json",
+   "Content": " So if you could email us both just what's going on that would be fantastic.",
+   "ParticipantId": " spk_0"
+        },
+        {"Id": " 366a6550-9ac6-4eaf-8452-ca3ea29925bb.wav.json",
+   "Content": " Yeah I will I'll find out. Ok. Anything else while we're talking?",
+   "ParticipantId": " spk_1"
+        },
+        {"Id": " 366a6550-9ac6-4eaf-8452-ca3ea29925bb.wav.json",
+   "Content": " Doesn't want it to be about. She wants to leave. Yeah but she she can't but does that? So it doesn't auto increase July 1st. Yeah.",
+   "ParticipantId": " spk_0"
+        },
+        {"Id": " 366a6550-9ac6-4eaf-8452-ca3ea29925bb.wav.json",
+   "Content": " Yep. Understand. Ok. Can I put you on a brief hold while I research the matter?",
+   "ParticipantId": " spk_1"
+        },
+        {"Id": " 366a6550-9ac6-4eaf-8452-ca3ea29925bb.wav.json",
+   "Content": " No that would be super helpful.",
+   "ParticipantId": " spk_0"
+        },
+        {"Id": " 366a6550-9ac6-4eaf-8452-ca3ea29925bb.wav.json",
+   "Content": " Ok.",
+   "ParticipantId": " spk_1"
+        },
+        {"Id": " 366a6550-9ac6-4eaf-8452-ca3ea29925bb.wav.json",
+   "Content": " Thank you so much for your help take care.",
+   "ParticipantId": " spk_0"
+        },
+        {"Id": " 366a6550-9ac6-4eaf-8452-ca3ea29925bb.wav.json",
+   "Content": " Sure. Oh ok. Thank you. Have a good day.",
+   "ParticipantId": " spk_1"
+        },
+        {"Id": " 366a6550-9ac6-4eaf-8452-ca3ea29925bb.wav.json",
+   "Content": " Alright bye bye.",
+   "ParticipantId": " spk_0"
+        },
+        {"Id": " 366a6550-9ac6-4eaf-8452-ca3ea29925bb.wav.json",
+   "Content": " Yeah bye bye.",
+   "ParticipantId": " spk_1"
+        }
+    ],
+"ContentMetadata": {"RedactionTypes": ["PII"
+        ], "Output": "Redacted"
+    }
+}
