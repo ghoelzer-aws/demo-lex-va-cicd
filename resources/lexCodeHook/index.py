@@ -183,7 +183,7 @@ def dispatch(intent_request):
     if intent_name == "CheckBalance":
         return CheckBalance(intent_request)
     elif intent_name == "FollowupCheckBalance":
-        return CheckBalance(intent_request)
+        return FollowupCheckBalance(intent_request)
     elif intent_name == "OpenAccount":
         return OpenAccount(intent_request)
 
