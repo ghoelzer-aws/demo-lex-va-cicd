@@ -1,0 +1,243 @@
+AWSTemplateFormatVersion: 2010-09-09
+
+Metadata:
+  AWS::CloudFormation::Interface:
+    ParameterGroups:
+    - Label:
+        default: Lex Bot
+      Parameters:
+      - BotName
+      - LogGroupName
+    - Label:
+        default: Lambda Code Location
+    ParameterLabels:
+      BotName:
+        default: Bot
+      LogGroupName:
+        default: CloudWatch Log Group for Lex Conversation Logs
+
+Parameters:
+  BotName:
+    Description: Input the name of your Lex bot
+    Type: String
+  LogGroupName:
+    Description: Input the name of the CloudWatch Log Group where your Lex bot conversation logs are configured
+    Type: String
+
+Resources:
+
+  LambdaTransformRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+        - Effect: Allow
+          Principal:
+            Service: lambda.amazonaws.com
+          Action: sts:AssumeRole
+      Policies:
+      - PolicyName: write-cloudwatch-logs
+        PolicyDocument:
+          Version: '2012-10-17'
+          Statement:
+          - Sid: WriteCloudWatchLogs
+            Effect: Allow
+            Action:
+            - logs:CreateLogStream
+            - logs:CreateLogGroup
+            - logs:PutLogEvents
+            Resource: 
+                Fn::Join:
+                - ''
+                - - 'arn:aws:logs:'
+                  - !Ref "AWS::Region"
+                  - ':'
+                  - !Ref "AWS::AccountId"
+                  - ':log-group:/aws/lambda/lex-logs-analysis-FirehoseTransformLambda-*'
+
+  FirehoseTransformLambda:
+    Type: AWS::Lambda::Function
+    Properties:
+      Code:
+        S3Bucket: aws-ml-blog
+        S3Key: artifacts/lex-quicksight-bi/CWLogsDeliveryLambda.zip
+      Description: This function performs a transformation on CloudWatch Logs data from Lex Conversation Logs, for Glue/Athena
+      Handler: lambda_function.handler
+      Role: !GetAtt LambdaTransformRole.Arn
+      Runtime: python3.9
+      Timeout: '60'
+
+  FirehoseTransformLambdaLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      RetentionInDays: 30
+      LogGroupName:
+        Fn::Join:
+        - ''
+        - - "/aws/lambda/"
+          - Ref: FirehoseTransformLambda
+
+  CWLogsDeliveryFirehose:
+    Type: 'AWS::KinesisFirehose::DeliveryStream'
+    Properties:
+      DeliveryStreamType: DirectPut
+      ExtendedS3DestinationConfiguration:
+        BucketARN: !GetAtt BotLogsS3Bucket.Arn
+        BufferingHints:
+          IntervalInSeconds: '60'
+          SizeInMBs: '1'
+        CompressionFormat: UNCOMPRESSED
+        RoleARN: !GetAtt 
+          - KinesisFirehoseDeliveryRole
+          - Arn
+        ProcessingConfiguration:
+          Enabled: 'true'
+          Processors:
+            - Parameters:
+                - ParameterName: LambdaArn
+                  ParameterValue: !GetAtt FirehoseTransformLambda.Arn
+              Type: Lambda
+
+  BotLogsS3Bucket:
+    Type: 'AWS::S3::Bucket'
+
+  KinesisFirehoseDeliveryRole:
+      Type: AWS::IAM::Role
+      Properties:
+        AssumeRolePolicyDocument:
+          Version: "2012-10-17"
+          Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+              - firehose.amazonaws.com
+              - s3.amazonaws.com
+            Action: sts:AssumeRole
+        Path: /
+        Policies:
+          - PolicyName: deliveryToS3
+            PolicyDocument:
+              Version: "2012-10-17"
+              Statement:
+              - Sid: deliveryToS3
+                Effect: Allow
+                Action:
+                - s3:AbortMultipartUpload
+                - s3:GetBucketLocation
+                - s3:GetObject
+                - s3:ListBucket
+                - s3:ListBucketMultipartUploads
+                - s3:PutObject
+                Resource: "*"
+          - PolicyName: invokeLambda
+            PolicyDocument:
+              Version: "2012-10-17"
+              Statement:
+              - Sid: lambda
+                Effect: Allow
+                Action:
+                - lambda:*
+                Resource: !GetAtt FirehoseTransformLambda.Arn
+
+  LexCrawlerRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          -
+            Effect: "Allow"
+            Principal:
+              Service:
+                - "glue.amazonaws.com"
+            Action:
+              - "sts:AssumeRole"
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AWSGlueServiceRole
+      Path: "/"
+      Policies:
+        -
+          PolicyName: "crawlS3Bucket"
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Sid: crawlS3Bucket
+                Effect: "Allow"
+                Action:
+                - s3:ListBucket
+                - s3:GetObject
+                - glue:UpdateTable
+                - glue:BatchCreatePartition
+                - glue:BatchUpdatePartition
+                Resource: "*"
+
+  CloudwatchLogsToKinesisRole:
+    Type: 'AWS::IAM::Role'
+    DependsOn: CWLogsDeliveryFirehose
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: 'Allow'
+            Action: 'sts:AssumeRole'
+            Principal:
+              Service:
+                - Fn::Join:
+                    - '.'
+                    - - logs
+                      - !Ref "AWS::Region"
+                      - amazonaws.com
+      Path: '/'
+      Policies:
+        - PolicyName: AllowCloudwatchToKinesisPolicy
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: 'Allow'
+                Action:
+                - firehose:PutRecord
+                - firehose:PutRecordBatch
+                Resource: !GetAtt CWLogsDeliveryFirehose.Arn
+              - Effect: 'Allow'
+                Action: 'iam:PassRole'
+                Resource:
+                  Fn::Join:
+                    - ':'
+                    - - 'arn:aws:iam:'
+                      - !Ref "AWS::AccountId"
+                      - 'role/CWLtoKinesisRole'
+
+  LexLogsDatabase:
+    Type: AWS::Glue::Database
+    Properties:
+      CatalogId: !Ref "AWS::AccountId"
+      DatabaseInput:
+        Description: "Database for Lex logs"
+        LocationUri: "TestLocationUri"
+
+  LexConversationLogsCrawler:
+    Type: AWS::Glue::Crawler
+    Properties:
+      Role: !GetAtt LexCrawlerRole.Arn
+      DatabaseName: !Ref LexLogsDatabase
+      Targets:
+        S3Targets:
+          - Path: !Ref BotLogsS3Bucket
+      SchemaChangePolicy:
+        UpdateBehavior: "UPDATE_IN_DATABASE"
+        DeleteBehavior: "LOG"
+      Schedule:
+        # this cron expression will run every 10 minutes
+        ScheduleExpression: "cron(0/10 * * * ? *)"
+
+  Logsubscription:
+    Type: 'AWS::Logs::SubscriptionFilter'
+    Properties:
+      LogGroupName: !Ref LogGroupName
+      DestinationArn: !GetAtt CWLogsDeliveryFirehose.Arn
+      FilterPattern: !Sub
+         - "{$.botName = ${BotName}}"
+         - { BotName: !Ref BotName }
+      RoleArn: !GetAtt CloudwatchLogsToKinesisRole.Arn
+

@@ -1,0 +1,314 @@
+AWSTemplateFormatVersion: 2010-09-09
+Resources:
+  ChimeBotRDS:
+    Type: 'AWS::RDS::DBCluster'
+    Properties:
+      MasterUsername: !Join 
+        - ''
+        - - '{{resolve:secretsmanager:'
+          - !Ref ChimeBotAnalyticsSecret
+          - ':SecretString:username}}'
+      MasterUserPassword: !Join 
+        - ''
+        - - '{{resolve:secretsmanager:'
+          - !Ref ChimeBotAnalyticsSecret
+          - ':SecretString:password}}'
+      DatabaseName: ChimeBotAnalyticsDB
+      DBSubnetGroupName: !Ref SubnetGroup
+      Engine: aurora-mysql
+      EngineMode: serverless
+      EnableHttpEndpoint: true
+      ScalingConfiguration:
+        AutoPause: false
+        MaxCapacity: 4
+        MinCapacity: 1
+      VpcSecurityGroupIds:
+        - !Ref ChimeBotAnalyticsSG
+    DependsOn:
+      - ChimeBotAnalyticsSG
+  ChimeBotAnalyticsLogGroup:
+    Type: 'AWS::Logs::LogGroup'
+    Properties: {}
+  ChimeBotAnalyticsSubFilter:
+    Type: 'AWS::Logs::SubscriptionFilter'
+    Properties:
+      LogGroupName: !Ref ChimeBotAnalyticsLogGroup
+      RoleArn: !GetAtt 
+        - ChimeBotAnalyticsCWLToKinesis
+        - Arn
+      FilterPattern: ''
+      DestinationArn: !GetAtt 
+        - ChimeBotAnalyticsKinesisStream
+        - Arn
+    DependsOn:
+      - ChimeBotAnalyticsKinesisStream
+      - ChimeBotAnalyticsCWLToKinesis
+      - ChimeBotAnalyticsLogGroup
+  ChimeBotAnalyticsCWLToKinesis:
+    Type: 'AWS::IAM::Role'
+    Properties:
+      Policies:
+        - PolicyName: ChimeBotAnalyticsCWLToKinesisPolicy
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Effect: Allow
+                Action: 'kinesis:PutRecord'
+                Resource: !GetAtt 
+                  - ChimeBotAnalyticsKinesisStream
+                  - Arn
+              - Effect: Allow
+                Action:
+                  - 'iam:PassRole'
+                Resource:
+                  - '*'
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: !Join 
+                - ''
+                - - 'logs.'
+                  - !Ref AWS::Region
+                  - '.amazonaws.com'
+            Action: 'sts:AssumeRole'
+    DependsOn:
+      - ChimeBotAnalyticsKinesisStream
+  ChimeBotAnalyticsLambdaRole:
+    Type: 'AWS::IAM::Role'
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: 'sts:AssumeRole'
+      ManagedPolicyArns:
+        - 'arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole'
+        - 'arn:aws:iam::aws:policy/ComprehendReadOnly'
+        - 'arn:aws:iam::aws:policy/AmazonRDSDataFullAccess'
+        - 'arn:aws:iam::aws:policy/AmazonKinesisFullAccess'
+        - 'arn:aws:iam::aws:policy/SecretsManagerReadWrite'
+  ChimeBotAnalyticsKinesisStream:
+    Type: 'AWS::Kinesis::Stream'
+    Properties:
+      ShardCount: 1
+  ChimeBotAnalyticsLambda:
+    Type: 'AWS::Lambda::Function'
+    Properties:
+      Timeout: 60
+      Runtime: python3.7
+      Role: !GetAtt ChimeBotAnalyticsLambdaRole.Arn
+      Handler: index.lambda_handler
+      Code:
+        ZipFile: |
+          import base64
+          import gzip
+          import io
+          import json
+          import zlib
+          import boto3
+          import random
+          import time
+          import datetime
+          import os
+
+          rds_client = boto3.client('rds-data')
+          comprehend_client =  boto3.client('comprehend')
+
+          def execute_statement(sql):
+              response = rds_client.execute_statement(
+                  secretArn=os.environ['SECRET_ARN'],
+                  database=os.environ['DATABASE_NAME'],
+                  resourceArn=os.environ['DATABASE_RESOURCE_ARN'],
+                  sql=sql
+              )
+              return response
+              
+          def insertRecordIntoDB(record_obj):
+              tmstmp_epoch_time = record_obj["timestamp"]
+              tmstmp_by_1000 = tmstmp_epoch_time/1000.0
+              tmstmp = datetime.datetime.fromtimestamp(tmstmp_by_1000).strftime('%Y-%m-%d %H:%M:%S.%f')
+              print(tmstmp)
+              record_obj = json.loads(record_obj["message"])
+              userId = record_obj["userId"]
+              botname = record_obj["botName"]
+              botalias = record_obj["botAlias"]
+              botversion = record_obj["botVersion"]
+              sessionId = record_obj["sessionId"]
+              intent = record_obj["intent"]
+              inputTranscript = record_obj["inputTranscript"]
+              sentimentResponse = comprehend_client.detect_sentiment(Text=inputTranscript,LanguageCode="en")
+              sentiment = sentimentResponse["Sentiment"]
+              topic = "RESOLVED"
+              if 'botResponse' in record_obj:
+                  botResponse = record_obj["botResponse"]
+              slots = record_obj["slots"]
+              missedUtterance = (record_obj["missedUtterance"] == 'True')
+              if missedUtterance==True:
+                missedUtterance=1
+              else:
+                missedUtterance=0
+              inputDialogMode = record_obj["inputDialogMode"]
+              requestId = record_obj["requestId"]
+              if 'botResponse' in record_obj:
+                  sql_stmt = "INSERT INTO FlowersLogs (botName,botAlias,botVersion,inputTranscript,botResponse,intent,missedUtterance,inputDialog,requestId,userId,sessionId,tmstmp,sentiment,topic) VALUES ('{}','{}','{}','{}','{}','{}','{}','{}','{}','{}','{}','{}','{}','{}');".format(botname,botalias,botversion,inputTranscript,botResponse,intent,missedUtterance,inputDialogMode,requestId,userId,sessionId, tmstmp,sentiment,topic)
+              else:
+                  sql_stmt = "INSERT INTO FlowersLogs (botName,botAlias,botVersion,inputTranscript,intent,missedUtterance,inputDialog,requestId,userId,sessionId,tmstmp,sentiment,topic) VALUES ('{}','{}','{}','{}','{}','{}','{}','{}','{}','{}','{}','{}','{}');".format(botname,botalias,botversion,inputTranscript,intent,missedUtterance,inputDialogMode,requestId,userId,sessionId, tmstmp,sentiment,topic)
+              print(sql_stmt)
+              response = execute_statement(sql_stmt)
+
+
+          def lambda_handler(event, context):
+              # TODO implement
+              print(event)
+              for record in event["Records"]:
+                  #print(record)
+                  #print(record["kinesis"]["data"])
+                  record = base64.b64decode(record["kinesis"]["data"])
+                  uncompressed_payload = json.loads(gzip.GzipFile(fileobj=io.BytesIO(record)).read())
+                  #message=record.decode('utf8')
+                  print(uncompressed_payload)
+                  print(uncompressed_payload["logEvents"][0]["message"])
+                  insertRecordIntoDB(uncompressed_payload["logEvents"][0])
+      Environment:
+        Variables:
+          DATABASE_NAME: ChimeBotAnalyticsDB
+          DATABASE_RESOURCE_ARN: !Join 
+            - ':'
+            - - 'arn:aws:rds'
+              - !Ref AWS::Region
+              - !Ref 'AWS::AccountId'
+              - cluster
+              - !Ref ChimeBotRDS
+          SECRET_ARN: !Ref ChimeBotAnalyticsSecret
+    DependsOn:
+      - ChimeBotRDS
+      - ChimeBotAnalyticsSecret
+  ChimeBotAnalyticsSecret:
+    Type: 'AWS::SecretsManager::Secret'
+    Properties:
+      GenerateSecretString:
+        SecretStringTemplate: '{"username": "root"}'
+        GenerateStringKey: password
+        PasswordLength: 16
+        ExcludeCharacters: '"@/\'
+    DependsOn: []
+  ChimeBotAnalyticsConsumer:
+    Type: 'AWS::Kinesis::StreamConsumer'
+    Properties:
+      StreamARN: !GetAtt 
+        - ChimeBotAnalyticsKinesisStream
+        - Arn
+      ConsumerName: !Ref ChimeBotAnalyticsLambda
+    DependsOn:
+      - ChimeBotAnalyticsKinesisStream
+      - ChimeBotAnalyticsLambda
+  ChimeBotAnalyticsToCWLRole:
+    Type: 'AWS::IAM::Role'
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lex.amazonaws.com
+            Action: 'sts:AssumeRole'
+      ManagedPolicyArns:
+        - 'arn:aws:iam::aws:policy/CloudWatchLogsFullAccess'
+  ChimeBotAnalyticsSG:
+    Type: 'AWS::EC2::SecurityGroup'
+    Properties:
+      GroupDescription: Lex Analytics DB Security Group - RDS
+      SecurityGroupEgress:
+        - CidrIp: 0.0.0.0/0
+          FromPort: -1
+          ToPort: -1
+          IpProtocol: -1
+      VpcId: !Ref VPC
+  ChimeBotAnalyticsSGIngress:
+    Type: 'AWS::EC2::SecurityGroupIngress'
+    Properties:
+      GroupId: !GetAtt ChimeBotAnalyticsSG.GroupId
+      SourceSecurityGroupId: !GetAtt QuickSightSG.GroupId
+      FromPort: 3306
+      ToPort: 3306
+      IpProtocol: tcp
+  QuickSightSG:
+    Type: 'AWS::EC2::SecurityGroup'
+    Properties:
+      GroupDescription: Lex Analytics DB Security Group - QuickSight
+      SecurityGroupEgress:
+        - CidrIp: 0.0.0.0/0
+          FromPort: -1
+          ToPort: -1
+          IpProtocol: -1
+      VpcId: !Ref VPC
+  QuickSightSGIngress:
+    Type: 'AWS::EC2::SecurityGroupIngress'
+    Properties:
+      GroupId: !GetAtt QuickSightSG.GroupId
+      SourceSecurityGroupId: !GetAtt ChimeBotAnalyticsSG.GroupId
+      FromPort: 0
+      ToPort: 65535
+      IpProtocol: tcp
+  KinesisToLambdaTrigger:
+    Type: 'AWS::Lambda::EventSourceMapping'
+    Properties:
+      EventSourceArn: !GetAtt ChimeBotAnalyticsKinesisStream.Arn
+      FunctionName: !GetAtt ChimeBotAnalyticsLambda.Arn
+      StartingPosition: LATEST
+  ChimeBotAnalyticsSecretAttachment:
+    Type: 'AWS::SecretsManager::SecretTargetAttachment'
+    Properties:
+      SecretId: !Ref ChimeBotAnalyticsSecret
+      TargetId: !Ref ChimeBotRDS
+      TargetType: 'AWS::RDS::DBCluster'
+    DependsOn:
+      - ChimeBotAnalyticsSecret
+      - ChimeBotRDS
+  VPC:
+    Type: AWS::EC2::VPC
+    Properties:
+      CidrBlock: 10.0.0.0/24
+  Subnet1:
+    Type: AWS::EC2::Subnet
+    Properties:
+      CidrBlock: 10.0.0.0/25
+      VpcId: !Ref VPC
+      AvailabilityZone: !Select 
+        - '0'
+        - !GetAZs ''
+    DependsOn:
+      - VPC
+  Subnet2:
+    Type: AWS::EC2::Subnet
+    Properties:
+      CidrBlock: 10.0.0.128/25
+      VpcId: !Ref VPC
+      AvailabilityZone: !Select 
+        - '1'
+        - !GetAZs ''
+    DependsOn:
+      - VPC
+  SubnetGroup:
+    Type: AWS::RDS::DBSubnetGroup
+    Properties: 
+      DBSubnetGroupDescription: RDS Subnet Group for Lex Analytics
+      SubnetIds: 
+        - !Ref Subnet1
+        - !Ref Subnet2
+    DependsOn:
+      - Subnet1
+      - Subnet2
+Outputs:
+  RDSEndpoint:
+    Value: !GetAtt ChimeBotRDS.Endpoint.Address
+  RDSPort:
+    Value: !GetAtt ChimeBotRDS.Endpoint.Port
+  QuickSightSecurityGroupID:
+    Value: !GetAtt QuickSightSG.GroupId
+  SecretARN:
+    Value: !Ref ChimeBotAnalyticsSecret

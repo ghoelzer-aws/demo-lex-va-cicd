@@ -199,6 +199,271 @@ export class DemoLexVaCicdStack extends Stack {
               ],
             },
             {
+              name: 'OpenAccount',
+              description: 'Intent to open the specified account type',
+              dialogCodeHook: {
+                enabled: true,
+              },
+              sampleUtterances: [
+                { utterance: 'Open an account' },
+                { utterance: 'Create account' },
+                { utterance: 'Open {accountType} account' },
+                { utterance: 'Create {accountType} account' },
+              ],
+              intentConfirmationSetting: {
+                declinationResponse: {
+                  messageGroupsList: [
+                    {
+                      message: {
+                        plainTextMessage: {
+                          value: 'Lets try that again',
+                        },
+                      },
+                    },
+                  ],
+                  allowInterrupt: true,
+                },
+                promptSpecification: {
+                  maxRetries: 2,
+                  messageGroupsList: [
+                    {
+                      message: {
+                        ssmlMessage: {
+                          value:
+                            '<speak>Is your phone number <say-as interpret-as="telephone">[phoneNumber]</say-as> ?</speak>',
+                        },
+                      },
+                    },
+                  ],
+                  allowInterrupt: true,
+                },
+                isActive: true,
+              },
+              outputContexts: [
+                {
+                  name: 'contextCreateAccount',
+                  timeToLiveInSeconds: 90,
+                  turnsToLive: 5,
+                },
+              ],
+              slots: [
+                {
+                  name: 'accountType',
+                  slotTypeName: 'accountType',
+                  valueElicitationSetting: {
+                    slotConstraint: 'Required',
+                    promptSpecification: {
+                      maxRetries: 2,
+                      messageGroupsList: [
+                        {
+                          message: {
+                            plainTextMessage: {
+                              value:
+                                'What account type would you like to open?',
+                            },
+                          },
+                        },
+                      ],
+                    },
+                  },
+                },
+                {
+                  name: 'firstName',
+                  slotTypeName: 'AMAZON.FirstName',
+                  valueElicitationSetting: {
+                    slotConstraint: 'Required',
+                    promptSpecification: {
+                      maxRetries: 2,
+                      messageGroupsList: [
+                        {
+                          message: {
+                            plainTextMessage: {
+                              value: 'What is your first name?',
+                            },
+                          },
+                        },
+                      ],
+                    },
+                  },
+                },
+                {
+                  name: 'lastName',
+                  slotTypeName: 'AMAZON.LastName',
+                  valueElicitationSetting: {
+                    slotConstraint: 'Required',
+                    promptSpecification: {
+                      maxRetries: 2,
+                      messageGroupsList: [
+                        {
+                          message: {
+                            plainTextMessage: {
+                              value: 'What is your last name?',
+                            },
+                          },
+                        },
+                      ],
+                    },
+                  },
+                },
+                {
+                  name: 'phoneNumber',
+                  slotTypeName: 'AMAZON.PhoneNumber',
+                  valueElicitationSetting: {
+                    slotConstraint: 'Required',
+                    defaultValueSpecification: {
+                      defaultValueList: [{ defaultValue: '[phoneNumber]' }],
+                    },
+                    promptSpecification: {
+                      maxRetries: 2,
+                      messageGroupsList: [
+                        {
+                          message: {
+                            plainTextMessage: {
+                              value: 'What is your phone number?',
+                            },
+                          },
+                        },
+                      ],
+                    },
+                  },
+                },
+              ],
+              slotPriorities: [
+                { priority: 1, slotName: 'accountType' },
+                { priority: 2, slotName: 'firstName' },
+                { priority: 3, slotName: 'lastName' },
+                { priority: 4, slotName: 'phoneNumber' },
+              ],
+            },
+            {
+              name: 'TransferFunds',
+              description: 'Help user transfer funds between bank accounts',
+              sampleUtterances: [
+                { utterance: 'I want to transfer funds' },
+                { utterance: 'Can I make a transfer?' },
+                { utterance: 'I want to make a transfer' },
+                {
+                  utterance:
+                    "I'd like to transfer {transferAmount} from {sourceAccountType} to {targetAccountType}",
+                },
+                {
+                  utterance:
+                    'Can I transfer {transferAmount} to my {targetAccountType}',
+                },
+                { utterance: 'Would you be able to help me with a transfer?' },
+                { utterance: 'Need to make a transfer' },
+              ],
+              fulfillmentCodeHook: { enabled: false },
+              intentClosingSetting: {
+                closingResponse: {
+                  messageGroupsList: [
+                    {
+                      message: {
+                        plainTextMessage: {
+                          value:
+                            'Thanks for transferring funds.  Have a nice day.',
+                        },
+                      },
+                    },
+                  ],
+                  allowInterrupt: false,
+                },
+                isActive: true,
+              },
+              intentConfirmationSetting: {
+                declinationResponse: {
+                  messageGroupsList: [
+                    {
+                      message: {
+                        plainTextMessage: {
+                          value: 'The transfer has been cancelled',
+                        },
+                      },
+                    },
+                  ],
+                },
+                promptSpecification: {
+                  messageGroupsList: [
+                    {
+                      message: {
+                        plainTextMessage: {
+                          value:
+                            'Got it. So we are transferring {transferAmount} from {sourceAccountType} to {targetAccountType}. Can I go ahead with the transfer?',
+                        },
+                      },
+                    },
+                  ],
+                  maxRetries: 2,
+                },
+              },
+              slots: [
+                {
+                  name: 'sourceAccountType',
+                  slotTypeName: 'accountType',
+                  valueElicitationSetting: {
+                    slotConstraint: 'Required',
+                    promptSpecification: {
+                      maxRetries: 2,
+                      messageGroupsList: [
+                        {
+                          message: {
+                            plainTextMessage: {
+                              value:
+                                'Which account would you like to transfer from?',
+                            },
+                          },
+                        },
+                      ],
+                    },
+                  },
+                },
+                {
+                  name: 'targetAccountType',
+                  slotTypeName: 'accountType',
+                  valueElicitationSetting: {
+                    slotConstraint: 'Required',
+                    promptSpecification: {
+                      maxRetries: 2,
+                      messageGroupsList: [
+                        {
+                          message: {
+                            plainTextMessage: {
+                              value: 'Which account are you transferring to?',
+                            },
+                          },
+                        },
+                      ],
+                    },
+                  },
+                },
+                {
+                  name: 'transferAmount',
+                  slotTypeName: 'AMAZON.Number',
+                  valueElicitationSetting: {
+                    slotConstraint: 'Required',
+                    promptSpecification: {
+                      maxRetries: 2,
+                      messageGroupsList: [
+                        {
+                          message: {
+                            plainTextMessage: {
+                              value:
+                                'How much money would you like to transfer?',
+                            },
+                          },
+                        },
+                      ],
+                    },
+                  },
+                },
+              ],
+              slotPriorities: [
+                { priority: 1, slotName: 'sourceAccountType' },
+                { priority: 2, slotName: 'targetAccountType' },
+                { priority: 3, slotName: 'transferAmount' },
+              ],
+            },
+            {
               name: 'FallbackIntent',
               parentIntentSignature: 'AMAZON.FallbackIntent',
               intentClosingSetting: {
